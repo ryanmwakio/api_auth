@@ -1,14 +1,27 @@
 <script setup>
-import IconPencil from "@/components/icons/IconPencil.vue";
-import IconTrash from "@/components/icons/IconTrash.vue";
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import TaskActions from "./TaskActions.vue";
 const props = defineProps({
   task: Object,
 });
 
+const emit = defineEmits(["updated"]);
+
 const completedClass = computed(() =>
   props.task.is_completed ? "completed" : ""
 );
+
+const isEdit = ref(false);
+
+const vFocus = {
+  mounted: (el) => el.focus(),
+};
+
+const updateTask = (event) => {
+  const updatedTask = { ...props.task, name: event.target.value };
+  isEdit.value = false;
+  emit("updated", updatedTask);
+};
 </script>
 
 <template>
@@ -24,22 +37,23 @@ const completedClass = computed(() =>
         class="ms-2 flex-grow-1"
         :class="completedClass"
         title="Double click the text to edit or remove"
+        @dblclick="($event) => (isEdit = true)"
       >
-        <!-- <div class="relative">
-                                            <input class="editable-task" type="text" />
-                                        </div> -->
-        <span>{{ task.name }}</span>
+        <div class="relative" v-if="isEdit">
+          <input
+            class="editable-task"
+            type="text"
+            @keyup.esc="($event) => (isEdit = false)"
+            v-focus
+            @keyup.enter="updateTask"
+          />
+        </div>
+        <span v-else>{{ task.name }}</span>
       </div>
       <div class="task-date">24 Feb 12:00</div>
     </div>
-    <div class="task-actions">
-      <button class="btn btn-sm btn-circle btn-outline-secondary me-1">
-        <IconPencil />
-      </button>
-      <button class="btn btn-sm btn-circle btn-outline-danger">
-        <IconTrash />
-      </button>
-    </div>
+    <!-- task actions -->
+    <TaskActions @edit="($event) => (isEdit = true)" v-show="!isEdit" />
   </li>
 </template>
 
