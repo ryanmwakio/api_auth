@@ -10,12 +10,18 @@ use App\Models\Task;
 
 class TaskController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(Task::class);
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $tasks = auth()->user()->tasks()->orderBy("id", "desc")->paginate(10);
+
         return TaskResource::collection($tasks);
     }
 
@@ -34,6 +40,8 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
+        // $this->authorize('view', $task);
+
         return TaskResource::make($task);
     }
 
